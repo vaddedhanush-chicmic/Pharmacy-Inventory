@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
-import { SalesController } from './sales.controller';
-import { SalesService } from './sales.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { SalesController } from './sales.controller.js';
+import { SalesService } from './sales.service.js';
+import { Sale, SaleSchema } from './schemas/sale.schema.js';
+import { MedicinesModule } from '../medicines/medicines.module.js';
 
 @Module({
+  imports: [
+    MongooseModule.forFeature([{ name: Sale.name, schema: SaleSchema }]),
+    MedicinesModule,
+  ],
   controllers: [SalesController],
   providers: [SalesService]
 })
