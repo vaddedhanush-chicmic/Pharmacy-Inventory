@@ -1,10 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { MedicinesService } from './modules/medicines/medicines.service.js';
+import { AuthService } from './modules/auth/auth.service.js';
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const medicinesService = app.get(MedicinesService);
+  const authService = app.get(AuthService);
+
+  console.log('Seeding Master Admin...');
+  try {
+    await authService.register({
+      name: 'System Admin',
+      email: 'admin@pharmacy.com',
+      password: 'admin',
+      role: 'Admin',
+    });
+    console.log('Master Admin created: admin@pharmacy.com / admin');
+  } catch (error) {
+    console.log('Master Admin already exists.');
+  }
 
   const seedData = [
     {

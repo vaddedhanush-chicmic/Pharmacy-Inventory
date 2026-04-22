@@ -66,4 +66,58 @@ export class ReportsService {
       }
     };
   }
+  async getSalesSummary(period: string) {
+    const today = new Date();
+    let startDate = new Date();
+
+    if (period === 'weekly') {
+      startDate.setDate(today.getDate() - 7);
+    } else if (period === 'monthly') {
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    } else if (period === 'yearly') {
+      startDate = new Date(today.getFullYear(), 0, 1);
+    } else {
+      // Default to last 30 days
+      startDate.setDate(today.getDate() - 30);
+    }
+
+    const sales = await this.saleModel.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: today }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: '$grandTotal' },
+          totalInvoices: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const result = sales[0] || { totalAmount: 0, totalInvoices: 0 };
+    return {
+      period,
+      startDate,
+      endDate: today,
+      revenue: result.totalAmount,
+      invoices: result.totalInvoices,
+    };
+  }
+
+  async getTopSelling() {
+    return this.saleModel.aggregate([
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.medicineId',
+          name: { $first: '$items.name' },
+          totalQuantitySold: { $sum: '$items.quantity' }
+        }
+      },
+      { $sort: { totalQuantitySold: -1 } },
+      { $limit: 5 }
+    ]);
+  }
 }

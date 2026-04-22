@@ -2,13 +2,16 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Sale, SaleDocument } from './schemas/sale.schema.js';
+import { CancelledSale, CancelledSaleDocument } from './schemas/cancelled-sale.schema.js';
 import { CreateSaleDto } from './dto/create-sale.dto.js';
+import { GetSalesFilterDto } from './dto/get-sales-filter.dto.js';
 import { MedicinesService } from '../medicines/medicines.service.js';
 
 @Injectable()
 export class SalesService {
   constructor(
     @InjectModel(Sale.name) private saleModel: Model<SaleDocument>,
+    @InjectModel(CancelledSale.name) private cancelledSaleModel: Model<CancelledSaleDocument>,
     private medicinesService: MedicinesService,
   ) {}
 
@@ -57,7 +60,73 @@ export class SalesService {
     return newSale.save();
   }
 
-  async findAll(): Promise<SaleDocument[]> {
-    return this.saleModel.find().sort({ createdAt: -1 }).exec();
+  async findAll(filterDto: GetSalesFilterDto): Promise<{ data: SaleDocument[]; total: number; page: number; limit: number }> {
+    const { startDate, endDate, page = 1, limit = 50 } = filterDto;
+    const query: any = {};
+
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = end;
+      }
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.saleModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
+      this.saleModel.countDocuments(query).exec(),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
+  }
+
+  async cancelSale(id: string, reason: string): Promise<CancelledSaleDocument> {
+    const sale = await this.saleModel.findById(id).exec();
+    if (!sale) {
+      throw new BadRequestException('Sale not found');
+    }
+
+    // 1. Refund the stock for each item
+    for (const item of sale.items) {
+      const medicine = await this.medicinesService.findOne(item.medicineId.toString());
+      if (medicine) {
+        await this.medicinesService.update(medicine._id.toString(), {
+          stock: medicine.stock + item.quantity
+        });
+      }
+    }
+
+    // 2. Clone to CancelledSale collection
+    const cancelledSale = new this.cancelledSaleModel({
+      invoiceNumber: sale.invoiceNumber,
+      customerName: sale.customerName,
+      customerPhone: sale.customerPhone,
+      paymentMethod: sale.paymentMethod,
+      items: sale.items,
+      grandTotal: sale.grandTotal,
+      reason,
+    });
+
+    await cancelledSale.save();
+
+    // 3. Delete from original Sales collection
+    await this.saleModel.findByIdAndDelete(id).exec();
+
+    return cancelledSale;
+  }
+
+  async getCancelledSales(): Promise<CancelledSaleDocument[]> {
+    return this.cancelledSaleModel.find().sort({ cancelledAt: -1 }).exec();
   }
 }

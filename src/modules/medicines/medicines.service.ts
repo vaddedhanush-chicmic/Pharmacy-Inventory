@@ -24,6 +24,21 @@ export class MedicinesService {
     return this.medicineModel.find().exec();
   }
 
+  async getLowStock(): Promise<MedicineDocument[]> {
+    return this.medicineModel.find({
+      $expr: { $lte: ['$stock', '$reorderLevel'] }
+    }).exec();
+  }
+
+  async getExpiringSoon(): Promise<MedicineDocument[]> {
+    const nextMonth = new Date();
+    nextMonth.setDate(nextMonth.getDate() + 30);
+    
+    return this.medicineModel.find({
+      expiryDate: { $lt: nextMonth, $gte: new Date() }
+    }).exec();
+  }
+
   async findOne(id: string): Promise<MedicineDocument> {
     const medicine = await this.medicineModel.findById(id).exec();
     if (!medicine) {
@@ -49,5 +64,31 @@ export class MedicinesService {
       throw new NotFoundException(`Medicine with ID ${id} not found`);
     }
     return deletedMedicine;
+  }
+
+  async cleanupExpired() {
+    const today = new Date();
+    
+    // Find all expired medicines that currently have stock > 0
+    const expiredMedicines = await this.medicineModel.find({
+      expiryDate: { $lt: today },
+      stock: { $gt: 0 }
+    }).exec();
+
+    // Reset their stock to 0
+    const result = await this.medicineModel.updateMany(
+      {
+        expiryDate: { $lt: today },
+        stock: { $gt: 0 }
+      },
+      {
+        $set: { stock: 0 }
+      }
+    ).exec();
+
+    return {
+      message: `${result.modifiedCount} expired medicines have been removed from shelves.`,
+      clearedMedicines: expiredMedicines.map(m => m.name),
+    };
   }
 }
