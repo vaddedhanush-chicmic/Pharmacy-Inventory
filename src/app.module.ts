@@ -1,0 +1,39 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { UsersModule } from './modules/users/users.module.js';
+import { MedicinesModule } from './modules/medicines/medicines.module.js';
+import { InventoryModule } from './modules/inventory/inventory.module.js';
+import { SalesModule } from './modules/sales/sales.module.js';
+import { SuppliersModule } from './modules/suppliers/suppliers.module.js';
+import { ReportsModule } from './modules/reports/reports.module.js';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URI'),
+      }),
+    }),
+
+    AuthModule,
+    UsersModule,
+    MedicinesModule,
+    InventoryModule,
+    SalesModule,
+    SuppliersModule,
+    ReportsModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+
