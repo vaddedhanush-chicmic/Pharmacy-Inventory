@@ -6,9 +6,7 @@ import { AppService } from './app.service.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { MedicinesModule } from './modules/medicines/medicines.module.js';
-import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { SalesModule } from './modules/sales/sales.module.js';
-import { SuppliersModule } from './modules/suppliers/suppliers.module.js';
 import { ReportsModule } from './modules/reports/reports.module.js';
 
 @Module({
@@ -27,9 +25,7 @@ import { ReportsModule } from './modules/reports/reports.module.js';
     AuthModule,
     UsersModule,
     MedicinesModule,
-    InventoryModule,
     SalesModule,
-    SuppliersModule,
     ReportsModule,
   ],
   controllers: [AppController],
