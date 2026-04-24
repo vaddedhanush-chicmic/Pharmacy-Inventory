@@ -1,200 +1,202 @@
 import { useState } from 'react';
 import { useExpenses } from '../hooks/use-expenses';
-import { useToast } from '../contexts/toast-context';
 import { 
   Plus, 
   ArrowUpRight,
-  X
+  X,
+  Filter
 } from 'lucide-react';
+import type { CreateExpenseDto } from '../lib/types';
 
 export function ExpensesPage() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [filters, setFilters] = useState({ period: 'monthly', startDate: '', endDate: '' });
-  const [formData, setFormData] = useState({ amount: 0, category: 'Other', description: '', date: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filters, setFilters] = useState<{ period?: string; startDate?: string; endDate?: string }>({ period: 'monthly' });
+  const [formData, setFormData] = useState<CreateExpenseDto>({
+    amount: 0,
+    category: 'Salary',
+    description: '',
+  });
 
-  const { success, error } = useToast();
   const { expenses, isLoading, createExpense } = useExpenses(filters);
+  const totalAmount = expenses?.reduce((sum, e) => sum + e.amount, 0) || 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     try {
-      await createExpense({
-        ...formData,
-        date: formData.date || undefined
-      });
-      success('Expense logged successfully');
-      setIsFormOpen(false);
-      setFormData({ amount: 0, category: 'Other', description: '', date: '' });
-    } catch (err: any) {
-      error(err.message);
-    } finally {
-      setIsSubmitting(false);
+      await createExpense(formData);
+      setIsModalOpen(false);
+      setFormData({ amount: 0, category: 'Salary', description: '' });
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const totalExpenses = expenses?.reduce((acc, exp) => acc + exp.amount, 0) || 0;
+  const categories = ['Salary', 'Rent', 'Utilities', 'Supplies', 'Marketing', 'Maintenance', 'Other'];
 
   return (
-    <div className="page-container pb-12">
+    <div className="page-container pb-8">
       <div className="page-header">
         <div>
           <h1 className="page-title">Expense Management</h1>
           <p className="page-subtitle">Track your pharmacy operational costs</p>
         </div>
-        <button onClick={() => setIsFormOpen(true)} className="btn btn-primary">
-          <Plus size={18} />
-          Log Expense
+        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+          <Plus size={16} /> Log Expense <span className="shortcut">F4</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-         <div className="glass-card p-6 flex flex-col gap-1 border-l-4 border-red-500">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total in Period</p>
-            <h2 className="text-3xl font-black text-white">₹{totalExpenses.toLocaleString()}</h2>
-            <div className="flex items-center gap-1 text-red-500 text-xs mt-2 font-bold">
-               <ArrowUpRight size={14} /> 
-               <span>Operational Outflow</span>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+        <div className="stat-card red md:col-span-1">
+          <div className="flex items-center gap-3 mb-2">
+            <ArrowUpRight size={18} className="text-[var(--text-muted)]" />
+            <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">Total in Period</span>
+          </div>
+          <p className="text-3xl font-bold text-[var(--text-primary)]">₹{totalAmount}</p>
+        </div>
+
+        <div className="card p-5 md:col-span-2 flex flex-col justify-center">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter size={16} className="text-[var(--text-muted)]" />
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">Filter Period</h3>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <select 
+              className="select w-full max-w-[160px]"
+              value={filters.period || ''}
+              onChange={(e) => setFilters({ period: e.target.value, startDate: '', endDate: '' })}
+            >
+              <option value="weekly">This Week</option>
+              <option value="monthly">This Month</option>
+              <option value="yearly">This Year</option>
+              <option value="">All Time / Custom</option>
+            </select>
+            
+            <div className="flex items-center gap-2 flex-wrap">
+              <input 
+                type="date" 
+                className="input w-auto"
+                value={filters.startDate || ''}
+                onChange={(e) => setFilters({ period: '', startDate: e.target.value, endDate: filters.endDate })}
+              />
+              <span className="text-[var(--text-muted)] text-sm">to</span>
+              <input 
+                type="date" 
+                className="input w-auto"
+                value={filters.endDate || ''}
+                onChange={(e) => setFilters({ period: '', startDate: filters.startDate, endDate: e.target.value })}
+              />
             </div>
-         </div>
-         
-         <div className="lg:col-span-3 glass-card p-6 flex flex-wrap gap-4 items-end">
-            <div className="flex-1 min-w-[150px]">
-               <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Period</label>
-               <select 
-                 className="select w-full"
-                 value={filters.period}
-                 onChange={e => setFilters(f => ({ ...f, period: e.target.value }))}
-               >
-                  <option value="weekly">This Week</option>
-                  <option value="monthly">This Month</option>
-                  <option value="yearly">This Year</option>
-                  <option value="">Custom Range</option>
-               </select>
-            </div>
-            {!filters.period && (
-               <>
-                  <div className="flex-1 min-w-[150px]">
-                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">From</label>
-                     <input type="date" className="input" value={filters.startDate} onChange={e => setFilters(f => ({ ...f, startDate: e.target.value }))} />
-                  </div>
-                  <div className="flex-1 min-w-[150px]">
-                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">To</label>
-                     <input type="date" className="input" value={filters.endDate} onChange={e => setFilters(f => ({ ...f, endDate: e.target.value }))} />
-                  </div>
-               </>
-            )}
-         </div>
+          </div>
+        </div>
       </div>
 
-      <div className="table-container glass-card-static">
+      <div className="table-container">
         <table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Category</th>
+              <th className="w-32">Date</th>
+              <th className="w-48">Category</th>
               <th>Description</th>
-              <th>Amount</th>
+              <th className="w-32 text-right">Amount</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-               [1, 2, 3].map(i => <tr key={i}><td colSpan={4} className="p-4"><div className="h-8 skeleton" /></td></tr>)
-            ) : expenses?.length ? (
-               expenses.map(exp => (
-                 <tr key={exp._id}>
-                    <td className="text-sm font-medium text-slate-300">
-                       {new Date(exp.date).toLocaleDateString()}
-                    </td>
-                    <td>
-                       <span className={`badge ${
-                         exp.category === 'Salary' ? 'badge-blue' : 
-                         exp.category === 'Inventory Purchase' ? 'badge-teal' : 
-                         exp.category === 'Electricity' ? 'badge-amber' : 
-                         'badge-green'
-                       }`}>
-                          {exp.category}
-                       </span>
-                    </td>
-                    <td className="text-sm text-slate-400 max-w-xs truncate">
-                       {exp.description || '-'}
-                    </td>
-                    <td className="font-bold text-red-400">
-                       ₹{exp.amount.toLocaleString()}
-                    </td>
-                 </tr>
-               ))
+              [1, 2, 3, 4].map(i => (
+                <tr key={i}><td colSpan={4}><div className="h-8 skeleton my-1" /></td></tr>
+              ))
+            ) : expenses && expenses.length > 0 ? (
+              expenses.map(expense => (
+                <tr key={expense._id}>
+                  <td className="text-sm">
+                    {new Date(expense.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </td>
+                  <td>
+                    <span className={`badge ${
+                      expense.category === 'Salary' ? 'badge-blue' : 
+                      expense.category === 'Inventory Purchase' ? 'badge-amber' : 'badge-green'
+                    }`}>
+                      {expense.category}
+                    </span>
+                  </td>
+                  <td className="text-sm">{expense.description}</td>
+                  <td className="text-right font-medium text-[var(--text-primary)]">₹{expense.amount}</td>
+                </tr>
+              ))
             ) : (
-              <tr><td colSpan={4} className="p-12 text-center text-slate-500 italic">No expenses logged for this period</td></tr>
+              <tr>
+                <td colSpan={4} className="text-center py-12 text-[var(--text-muted)]">
+                  <ReceiptText size={32} className="mx-auto mb-3 opacity-30" />
+                  <p>No expenses logged for this period</p>
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Log Expense Modal */}
-      {isFormOpen && (
+      {isModalOpen && (
         <div className="modal-overlay">
-           <div className="modal-content">
-              <div className="flex items-center justify-between mb-6">
-                 <h2 className="text-xl font-bold text-white">Log New Expense</h2>
-                 <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
+          <div className="modal-content">
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="text-lg font-bold text-[var(--text-primary)]">Log New Expense</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Amount (₹)</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  step="0.01"
+                  required
+                  className="input"
+                  value={formData.amount || ''}
+                  onChange={e => setFormData({...formData, amount: parseFloat(e.target.value)})}
+                  autoFocus
+                />
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Amount (₹) *</label>
-                    <input 
-                      type="number" 
-                      className="input" 
-                      required 
-                      min="0"
-                      value={formData.amount}
-                      onChange={e => setFormData(f => ({ ...f, amount: Number(e.target.value) }))}
-                    />
-                 </div>
-                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Category *</label>
-                    <select 
-                      className="select w-full" 
-                      value={formData.category}
-                      onChange={e => setFormData(f => ({ ...f, category: e.target.value }))}
-                    >
-                       <option>Inventory Purchase</option>
-                       <option>Salary</option>
-                       <option>Electricity</option>
-                       <option>Maintenance</option>
-                       <option>Other</option>
-                    </select>
-                 </div>
-                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Date (Optional)</label>
-                    <input 
-                      type="date" 
-                      className="input" 
-                      value={formData.date}
-                      onChange={e => setFormData(f => ({ ...f, date: e.target.value }))}
-                    />
-                 </div>
-                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
-                    <textarea 
-                      className="input h-24 resize-none" 
-                      placeholder="Details about the expense..." 
-                      value={formData.description}
-                      onChange={e => setFormData(f => ({ ...f, description: e.target.value }))}
-                    />
-                 </div>
-                 <div className="flex justify-end gap-3 pt-4">
-                    <button type="button" onClick={() => setIsFormOpen(false)} className="btn btn-secondary">Cancel</button>
-                    <button type="submit" disabled={isSubmitting} className="btn btn-primary">
-                       {isSubmitting ? 'Logging...' : 'Save Expense'}
-                    </button>
-                 </div>
-              </form>
-           </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Category</label>
+                <select 
+                  className="select w-full"
+                  value={formData.category}
+                  onChange={e => setFormData({...formData, category: e.target.value})}
+                >
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Description</label>
+                <textarea 
+                  required
+                  className="input h-24"
+                  placeholder="What was this expense for?"
+                  value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Save Expense
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+// Needed to import ReceiptText for the empty state
+import { ReceiptText } from 'lucide-react';

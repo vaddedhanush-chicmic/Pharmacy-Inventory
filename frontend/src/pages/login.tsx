@@ -1,89 +1,102 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/auth-context';
-import { useToast } from '../contexts/toast-context';
-import { Pill } from 'lucide-react';
+import { Lock, Mail, LogIn } from 'lucide-react';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
-  const { success, error } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    setError('');
+    setIsLoading(true);
 
-    setIsSubmitting(true);
     try {
       await login({ email, password });
-      success('Logged in successfully');
     } catch (err: any) {
-      error(err.message || 'Login failed');
+      setError(err.message || 'Invalid credentials');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0a0e1a] px-4">
-      <div className="w-full max-w-md space-y-8 glass-card p-8">
-        <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal-500/20 text-teal-500">
-            <Pill size={32} />
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-body)] p-4">
+      <div className="w-full max-w-md">
+        {/* Branding */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--accent)] text-white text-3xl mb-4">
+            💊
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-white">
-            PharmaCenter
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Sign in to manage your pharmacy inventory
-          </p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">PharmaCenter</h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">Pharmacy Inventory Management</p>
         </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
-                Email address
-              </label>
-              <input
-                type="email"
-                required
-                className="input"
-                placeholder="admin@pharmacy.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                className="input"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
 
-          <div>
+        {/* Login Card */}
+        <div className="card p-8">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Sign in to your account</h2>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-[var(--color-red-light)] text-[var(--color-red)] text-sm border border-red-200">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                <input
+                  type="email"
+                  className="input pl-10"
+                  placeholder="you@pharmacy.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                <input
+                  type="password"
+                  className="input pl-10"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="btn btn-primary w-full py-3"
+              disabled={isLoading}
+              className="btn btn-primary w-full btn-lg mt-2"
             >
-              {isSubmitting ? 'Signing in...' : 'Sign in'}
+              {isLoading ? (
+                'Signing in...'
+              ) : (
+                <>
+                  <LogIn size={18} />
+                  Sign In
+                </>
+              )}
             </button>
-          </div>
-        </form>
-
-        <div className="mt-6 text-center text-xs text-slate-500">
-          <p>© 2026 Pharmacy Inventory Management System</p>
+          </form>
         </div>
+
+        <p className="text-center text-xs text-[var(--text-muted)] mt-6">
+          Pharmacy Inventory Management System v1.0
+        </p>
       </div>
     </div>
   );

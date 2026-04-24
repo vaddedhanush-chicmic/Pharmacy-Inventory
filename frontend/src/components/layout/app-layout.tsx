@@ -1,22 +1,27 @@
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth-context';
 import { 
   LayoutDashboard, 
   Pill, 
   ShoppingCart, 
-  ReceiptText, 
   History, 
+  ReceiptText, 
   TrendingUp, 
   Users, 
   LogOut,
   Menu,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Plus
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function AppLayout() {
   const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
@@ -30,74 +35,117 @@ export function AppLayout() {
     menuItems.push(
       { name: 'Expenses', path: '/expenses', icon: ReceiptText },
       { name: 'Reports', path: '/reports', icon: TrendingUp },
-      { name: 'Staff Management', path: '/users', icon: Users }
+      { name: 'Staff', path: '/users', icon: Users }
     );
   }
 
-  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      switch (e.key) {
+        case 'F2':
+          e.preventDefault();
+          navigate('/pos');
+          break;
+        case 'F3':
+          e.preventDefault();
+          navigate('/medicines');
+          break;
+        case 'F4':
+          e.preventDefault();
+          navigate('/expenses');
+          break;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
+  const currentPage = menuItems.find(i => i.path === location.pathname)?.name || 'Page';
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0a0e1a]">
-      {/* Sidebar - Desktop */}
-      <aside className="hidden w-64 flex-col sidebar md:flex">
-        <div className="flex h-16 items-center px-6 text-xl font-bold text-teal-500">
-          PharmaCenter
+    <div className="flex h-screen overflow-hidden bg-[var(--bg-body)]">
+      {/* Sidebar — Desktop */}
+      <aside 
+        className={`hidden md:flex flex-col sidebar ${sidebarExpanded ? 'w-56' : 'w-16'}`}
+        style={{ transition: 'width 0.2s ease' }}
+      >
+        {/* Logo */}
+        <div className="flex h-14 items-center px-4 border-b border-white/5 shrink-0">
+          {sidebarExpanded ? (
+            <span className="text-lg font-bold text-white tracking-tight">💊 PharmaCenter</span>
+          ) : (
+            <span className="text-lg mx-auto">💊</span>
+          )}
         </div>
         
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        {/* Nav */}
+        <nav className="flex-1 space-y-0.5 px-2 py-3 overflow-y-auto">
           {menuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
+              title={item.name}
               className={`sidebar-link ${location.pathname === item.path ? 'active' : ''}`}
             >
-              <item.icon size={20} />
-              {item.name}
+              <item.icon size={18} className="shrink-0" />
+              {sidebarExpanded && <span>{item.name}</span>}
             </Link>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-[rgba(148,163,184,0.12)]">
-          <div className="mb-4 flex items-center gap-3 px-2">
-            <div className="h-8 w-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-500 font-bold uppercase">
-              {user?.name?.[0]}
-            </div>
-            <div className="flex-1 overflow-hidden">
+        {/* Collapse Toggle */}
+        <button 
+          onClick={() => setSidebarExpanded(!sidebarExpanded)}
+          className="flex items-center justify-center h-10 border-t border-white/5 text-slate-400 hover:text-white transition-colors"
+        >
+          {sidebarExpanded ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+        </button>
+
+        {/* User + Logout */}
+        <div className="p-3 border-t border-white/5">
+          {sidebarExpanded && (
+            <div className="mb-2 px-2">
               <p className="text-sm font-medium text-white truncate">{user?.name}</p>
               <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
             </div>
-          </div>
-          <button onClick={logout} className="sidebar-link w-full text-red-400 hover:text-red-300">
-            <LogOut size={20} />
-            Logout
+          )}
+          <button onClick={logout} className="sidebar-link w-full text-red-400 hover:text-red-300" title="Logout">
+            <LogOut size={18} className="shrink-0" />
+            {sidebarExpanded && <span>Logout</span>}
           </button>
         </div>
       </aside>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={toggleMobileMenu}>
-          <div className="h-full w-64 flex flex-col sidebar" onClick={e => e.stopPropagation()}>
-            <div className="flex h-16 items-center justify-between px-6 text-xl font-bold text-teal-500">
-              PharmaCenter
-              <button onClick={toggleMobileMenu}><X size={20} className="text-slate-400" /></button>
+        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="h-full w-56 flex flex-col sidebar" onClick={e => e.stopPropagation()}>
+            <div className="flex h-14 items-center justify-between px-4 border-b border-white/5">
+              <span className="text-lg font-bold text-white">💊 PharmaCenter</span>
+              <button onClick={() => setIsMobileMenuOpen(false)}>
+                <X size={18} className="text-slate-400" />
+              </button>
             </div>
-            <nav className="flex-1 space-y-1 px-3 py-4">
+            <nav className="flex-1 space-y-0.5 px-2 py-3">
               {menuItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  onClick={toggleMobileMenu}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={`sidebar-link ${location.pathname === item.path ? 'active' : ''}`}
                 >
-                  <item.icon size={20} />
+                  <item.icon size={18} />
                   {item.name}
                 </Link>
               ))}
             </nav>
-            <div className="p-4 border-t border-[rgba(148,163,184,0.12)]">
+            <div className="p-3 border-t border-white/5">
               <button onClick={logout} className="sidebar-link w-full text-red-400">
-                <LogOut size={20} />
+                <LogOut size={18} />
                 Logout
               </button>
             </div>
@@ -105,34 +153,70 @@ export function AppLayout() {
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <header className="flex h-16 items-center justify-between border-b border-[rgba(148,163,184,0.12)] px-4 md:px-8">
-          <div className="flex items-center gap-4">
-            <button className="md:hidden" onClick={toggleMobileMenu}>
-              <Menu size={24} className="text-slate-400" />
+        {/* Header with Quick Actions */}
+        <header className="flex h-14 items-center justify-between border-b border-[var(--border-light)] bg-[var(--bg-header)] px-4 md:px-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <button className="md:hidden p-1" onClick={() => setIsMobileMenuOpen(true)}>
+              <Menu size={20} className="text-[var(--text-secondary)]" />
             </button>
-            <h2 className="text-lg font-semibold text-white">
-              {menuItems.find(i => i.path === location.pathname)?.name || 'Page'}
-            </h2>
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">{currentPage}</h2>
           </div>
-          
-          <div className="flex items-center gap-4">
-             <div className="hidden md:flex flex-col items-end">
-                <p className="text-sm font-medium text-white">{user?.name}</p>
-                <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
-             </div>
-             <div className="h-9 w-9 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-500 font-bold uppercase border border-teal-500/30">
-               {user?.name?.[0]}
-             </div>
+
+          {/* Quick Action Toolbar */}
+          <div className="hidden md:flex items-center gap-2">
+            <button onClick={() => navigate('/pos')} className="btn btn-primary btn-sm">
+              <Plus size={14} /> New Sale <span className="shortcut">F2</span>
+            </button>
+            <button onClick={() => navigate('/medicines')} className="btn btn-secondary btn-sm">
+              <Pill size={14} /> Inventory <span className="shortcut">F3</span>
+            </button>
+            {isAdmin && (
+              <button onClick={() => navigate('/expenses')} className="btn btn-secondary btn-sm">
+                <ReceiptText size={14} /> Expense <span className="shortcut">F4</span>
+              </button>
+            )}
+          </div>
+
+          {/* User avatar */}
+          <div className="flex items-center gap-3">
+            <div className="hidden md:block text-right">
+              <p className="text-sm font-medium text-[var(--text-primary)]">{user?.name}</p>
+              <p className="text-xs text-[var(--text-muted)] capitalize">{user?.role}</p>
+            </div>
+            <div className="h-8 w-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-bold uppercase">
+              {user?.name?.[0]}
+            </div>
           </div>
         </header>
 
-        {/* Content */}
+        {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>
+
+        {/* Status Bar (Marg pattern) */}
+        <div className="status-bar shrink-0 hidden md:flex">
+          <div className="status-item">
+            <span className="opacity-60">Logged in as:</span>
+            <span className="font-medium">{user?.name}</span>
+            <span className="opacity-40">({user?.role})</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="status-item">
+              <span className="opacity-60">Shortcuts:</span>
+              <span>F2 Sale</span>
+              <span className="opacity-30">|</span>
+              <span>F3 Inventory</span>
+              <span className="opacity-30">|</span>
+              <span>F4 Expense</span>
+            </div>
+            <div className="status-item">
+              <span className="opacity-60">{new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

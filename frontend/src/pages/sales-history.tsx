@@ -7,7 +7,7 @@ import {
   ChevronUp, 
   XCircle, 
   History,
-  ReceiptText
+  AlertCircle
 } from 'lucide-react';
 
 export function SalesHistoryPage() {
@@ -35,66 +35,56 @@ export function SalesHistoryPage() {
 
   const toggleRow = (id: string) => setExpandedRow(expandedRow === id ? null : id);
 
-  // Handle both { data: [...] } paginated and plain array responses
+  // Handle both { data: [...] } paginated and raw array responses
   const salesList = Array.isArray(sales) ? sales : (sales?.data ?? []);
   const cancelledList = Array.isArray(cancelledSales) ? cancelledSales : [];
 
-  // Debug logging
-  console.log('[SalesHistory] sales raw:', sales, 'salesList:', salesList, 'error:', salesError);
-
   return (
-    <div className="page-container pb-12">
+    <div className="page-container pb-8">
       <div className="page-header">
         <div>
           <h1 className="page-title">Sales History</h1>
           <p className="page-subtitle">Review previous invoices and transactions</p>
         </div>
         {salesError && (
-          <div className="text-red-400 text-sm bg-red-500/10 px-4 py-2 rounded-lg border border-red-500/20">
-            Error: {(salesError as Error).message}
+          <div className="flex items-center gap-2 text-[var(--color-red)] text-sm bg-[var(--color-red-light)] px-3 py-2 rounded-lg border border-red-200">
+            <AlertCircle size={14} />
+            {(salesError as Error).message}
           </div>
         )}
       </div>
 
       {/* Filters */}
-      <div className="mb-8 space-y-5">
-        <div className="glass-card-static p-6">
-          <div className="flex flex-wrap gap-6 items-end">
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Start Date</label>
-              <input 
-                type="date" 
-                className="input" 
-                value={filters.startDate}
-                onChange={e => setFilters(f => ({ ...f, startDate: e.target.value }))}
-              />
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">End Date</label>
-              <input 
-                type="date" 
-                className="input" 
-                value={filters.endDate}
-                onChange={e => setFilters(f => ({ ...f, endDate: e.target.value }))}
-              />
-            </div>
-            <button onClick={() => setFilters({ startDate: '', endDate: '', page: 1, limit: 50 })} className="btn btn-secondary">
-              Reset Filters
-            </button>
-          </div>
+      <div className="flex flex-wrap items-end gap-4 mb-5">
+        <div className="flex-1 min-w-[160px]">
+          <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase mb-1">Start Date</label>
+          <input 
+            type="date" className="input input-sm" value={filters.startDate}
+            onChange={e => setFilters(f => ({ ...f, startDate: e.target.value }))}
+          />
         </div>
+        <div className="flex-1 min-w-[160px]">
+          <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase mb-1">End Date</label>
+          <input 
+            type="date" className="input input-sm" value={filters.endDate}
+            onChange={e => setFilters(f => ({ ...f, endDate: e.target.value }))}
+          />
+        </div>
+        <button onClick={() => setFilters({ startDate: '', endDate: '', page: 1, limit: 50 })} className="btn btn-secondary btn-sm">
+          Reset
+        </button>
 
-        <div className="flex gap-3">
+        <div className="flex border border-[var(--border-input)] rounded-lg p-0.5 gap-0.5 ml-auto">
           {[
-            { id: 'all', label: 'Completed Invoices', icon: History },
-            { id: 'cancelled', label: 'Cancelled Log', icon: XCircle },
-          ].map((tab) => (
-            <button 
+            { id: 'all' as const, label: 'Invoices', icon: History },
+            { id: 'cancelled' as const, label: 'Cancelled', icon: XCircle },
+          ].map(tab => (
+            <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id ? 'bg-teal-500/20 text-teal-500 border border-teal-500/30' : 'text-slate-400 hover:text-slate-200 border border-transparent'}`}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${activeTab === tab.id ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-table-stripe)]'}`}
             >
-              <tab.icon size={16} />
+              <tab.icon size={12} />
               {tab.label}
             </button>
           ))}
@@ -102,73 +92,71 @@ export function SalesHistoryPage() {
       </div>
 
       {/* Table */}
-      <div className="table-container glass-card-static">
+      <div className="table-container">
         <table>
           <thead>
             <tr>
-              <th className="w-12"></th>
+              <th className="w-10"></th>
               <th>Invoice #</th>
               <th>Date</th>
               <th>Customer</th>
-              <th>Items</th>
-              <th>Total</th>
-              <th>Method</th>
-              <th className="text-right">Action</th>
+              <th className="text-center">Items</th>
+              <th className="text-right">Total</th>
+              <th className="text-center">Method</th>
+              {activeTab === 'all' && isAdmin && <th className="text-center w-20">Action</th>}
+              {activeTab === 'cancelled' && <th>Reason</th>}
             </tr>
           </thead>
           <tbody>
             {isLoading || isCancelledLoading ? (
               [1, 2, 3, 4, 5].map(i => (
-                <tr key={i}><td colSpan={8} className="p-5"><div className="h-10 skeleton" /></td></tr>
+                <tr key={i}><td colSpan={8}><div className="h-8 skeleton my-1" /></td></tr>
               ))
             ) : activeTab === 'all' ? (
-              salesList.length > 0 ? salesList.map(sale => (
+              salesList.length > 0 ? salesList.map((sale: any) => (
                 <Fragment key={sale._id}>
-                  <tr className="cursor-pointer hover:bg-slate-900/30 transition-colors" onClick={() => toggleRow(sale._id)}>
-                    <td className="text-slate-500">
-                      {expandedRow === sale._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  <tr className="cursor-pointer" onClick={() => toggleRow(sale._id)}>
+                    <td className="text-[var(--text-muted)]">
+                      {expandedRow === sale._id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </td>
-                    <td className="font-bold text-white">{sale.invoiceNumber}</td>
-                    <td className="text-sm text-slate-400">{new Date(sale.createdAt).toLocaleString()}</td>
-                    <td>
-                      <div className="text-sm font-medium text-slate-300">{sale.customerName || 'Walk-in'}</div>
-                      {sale.customerPhone && <div className="text-xs text-slate-500 mt-0.5">{sale.customerPhone}</div>}
-                    </td>
-                    <td className="text-sm">{sale.items.length} items</td>
-                    <td className="font-bold text-teal-500 text-base">₹{sale.grandTotal}</td>
-                    <td><span className="badge badge-blue">{sale.paymentMethod}</span></td>
-                    <td className="text-right">
-                      {isAdmin && (
+                    <td className="font-medium text-[var(--text-primary)]">{sale.invoiceNumber}</td>
+                    <td className="text-xs">{new Date(sale.createdAt).toLocaleString('en-IN')}</td>
+                    <td>{sale.customerName || 'Walk-in'}</td>
+                    <td className="text-center">{sale.items.length}</td>
+                    <td className="text-right font-bold text-[var(--accent)]">₹{sale.grandTotal}</td>
+                    <td className="text-center"><span className="badge badge-blue">{sale.paymentMethod}</span></td>
+                    {isAdmin && (
+                      <td className="text-center">
                         <button 
                           onClick={(e) => { e.stopPropagation(); setCancellingId(sale._id); }}
-                          className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="p-1.5 text-[var(--color-red)] opacity-40 hover:opacity-100 rounded"
                         >
-                          <XCircle size={18} />
+                          <XCircle size={14} />
                         </button>
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </tr>
                   {expandedRow === sale._id && (
-                    <tr className="bg-slate-950/40">
-                      <td colSpan={8} className="p-0">
-                        <div className="p-8 border-y border-slate-800/50 space-y-5">
-                          <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">Invoice Details</h4>
-                          <div className="space-y-2">
-                            {sale.items.map((item, idx) => (
-                              <div key={idx} className="flex justify-between items-center text-sm p-3 rounded-lg hover:bg-slate-900/50">
-                                <div className="flex-1">
-                                  <span className="font-bold text-slate-200">{item.name}</span>
-                                  <span className="ml-3 text-xs text-slate-500">× {item.quantity}</span>
-                                </div>
-                                <div className="text-slate-400 mr-8">₹{item.unitPrice}</div>
-                                <div className="w-28 text-right font-bold text-white">₹{item.subTotal}</div>
+                    <tr>
+                      <td colSpan={8} className="!p-0 !bg-[var(--bg-table-stripe)]">
+                        <div className="p-5 space-y-3">
+                          <p className="text-xs font-semibold text-[var(--text-muted)] uppercase">Line Items</p>
+                          {sale.items.map((item: any, idx: number) => (
+                            <div key={idx} className="flex justify-between items-center text-sm px-3 py-2 rounded bg-white border border-[var(--border-light)]">
+                              <div>
+                                <span className="font-medium text-[var(--text-primary)]">{item.name}</span>
+                                <span className="ml-2 text-xs text-[var(--text-muted)]">× {item.quantity}</span>
                               </div>
-                            ))}
-                          </div>
-                          <div className="flex justify-end pt-4 border-t border-slate-800">
+                              <div className="flex gap-6">
+                                <span className="text-[var(--text-muted)]">@ ₹{item.unitPrice}</span>
+                                <span className="font-bold w-20 text-right">₹{item.subTotal}</span>
+                              </div>
+                            </div>
+                          ))}
+                          <div className="flex justify-end pt-2 border-t border-[var(--border-light)]">
                             <div className="text-right">
-                              <p className="text-xs text-slate-500 mb-1">Grand Total</p>
-                              <p className="text-2xl font-black text-teal-500">₹{sale.grandTotal}</p>
+                              <p className="text-xs text-[var(--text-muted)]">Grand Total</p>
+                              <p className="text-xl font-bold text-[var(--accent)]">₹{sale.grandTotal}</p>
                             </div>
                           </div>
                         </div>
@@ -178,28 +166,26 @@ export function SalesHistoryPage() {
                 </Fragment>
               )) : (
                 <tr>
-                  <td colSpan={8} className="p-16 text-center">
-                    <ReceiptText size={48} className="mx-auto mb-4 text-slate-700" />
-                    <p className="text-slate-500 italic text-lg">No sales found for this period</p>
-                    <p className="text-slate-600 text-sm mt-1">Try adjusting the date filters</p>
+                  <td colSpan={8} className="text-center py-12 text-[var(--text-muted)]">
+                    No sales found for this period
                   </td>
                 </tr>
               )
             ) : (
-              cancelledList.length > 0 ? cancelledList.map(sale => (
-                <tr key={sale._id} className="opacity-70">
-                  <td className="text-slate-700"><XCircle size={16} /></td>
-                  <td className="font-bold text-slate-400 line-through">{sale.invoiceNumber}</td>
-                  <td className="text-sm text-slate-500">{new Date(sale.cancelledAt).toLocaleString()}</td>
-                  <td className="text-sm text-slate-500">{sale.customerName || 'Walk-in'}</td>
-                  <td className="text-sm text-slate-600">{sale.items.length} items</td>
-                  <td className="font-bold text-slate-600 italic">₹{sale.grandTotal}</td>
-                  <td><span className="badge badge-red">Cancelled</span></td>
-                  <td className="text-right italic text-xs text-red-500/60 max-w-[180px] truncate">{sale.reason}</td>
+              cancelledList.length > 0 ? cancelledList.map((sale: any) => (
+                <tr key={sale._id}>
+                  <td className="text-[var(--color-red)]"><XCircle size={14} /></td>
+                  <td className="font-medium text-[var(--text-muted)] line-through">{sale.invoiceNumber}</td>
+                  <td className="text-xs">{new Date(sale.cancelledAt).toLocaleString('en-IN')}</td>
+                  <td>{sale.customerName || 'Walk-in'}</td>
+                  <td className="text-center">{sale.items.length}</td>
+                  <td className="text-right text-[var(--text-muted)]">₹{sale.grandTotal}</td>
+                  <td className="text-center"><span className="badge badge-red">Cancelled</span></td>
+                  <td className="text-xs text-[var(--color-red)] max-w-[200px] truncate">{sale.reason}</td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={8} className="p-16 text-center text-slate-500 italic text-lg">No cancelled sales</td>
+                  <td colSpan={8} className="text-center py-12 text-[var(--text-muted)]">No cancelled sales</td>
                 </tr>
               )
             )}
@@ -211,26 +197,22 @@ export function SalesHistoryPage() {
       {cancellingId && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2 className="text-xl font-bold text-white mb-2">Cancel Invoice</h2>
-            <p className="text-sm text-slate-400 mb-8">Are you sure you want to cancel this sale? Stock will be refunded to inventory.</p>
-            <div className="space-y-5">
+            <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">Cancel Invoice</h2>
+            <p className="text-sm text-[var(--text-muted)] mb-5">Stock will be refunded to inventory.</p>
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Reason for Cancellation</label>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Reason</label>
                 <textarea 
-                  className="input h-28" 
-                  placeholder="e.g. Returned by customer, Incorrect billing..." 
+                  className="input h-24" 
+                  placeholder="e.g. Returned by customer..." 
                   value={cancelReason}
                   onChange={e => setCancelReason(e.target.value)}
-                  required
+                  required autoFocus
                 />
               </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <button onClick={() => { setCancellingId(null); setCancelReason(''); }} className="btn btn-secondary">Dismiss</button>
-                <button 
-                  onClick={handleCancel} 
-                  disabled={!cancelReason}
-                  className="btn btn-danger"
-                >
+              <div className="flex justify-end gap-2 pt-2">
+                <button onClick={() => { setCancellingId(null); setCancelReason(''); }} className="btn btn-secondary">Cancel</button>
+                <button onClick={handleCancel} disabled={!cancelReason} className="btn btn-danger">
                   Confirm Cancellation
                 </button>
               </div>

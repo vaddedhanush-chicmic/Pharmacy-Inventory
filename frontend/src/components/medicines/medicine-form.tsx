@@ -3,22 +3,22 @@ import { type CreateMedicineDto, type Medicine } from '../../lib/types';
 import { X } from 'lucide-react';
 
 interface MedicineFormProps {
-  initialData?: Medicine;
+  medicine?: Medicine | null;
   onSubmit: (dto: CreateMedicineDto) => Promise<void>;
   onClose: () => void;
-  isSubmitting: boolean;
 }
 
-export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: MedicineFormProps) {
+export function MedicineForm({ medicine, onSubmit, onClose }: MedicineFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<CreateMedicineDto>({
-    name: initialData?.name || '',
-    description: initialData?.description || '',
-    manufacturer: initialData?.manufacturer || '',
-    mrp: initialData?.mrp || 0,
-    sellingPrice: initialData?.sellingPrice || 0,
-    stock: initialData?.stock || 0,
-    expiryDate: initialData?.expiryDate ? new Date(initialData.expiryDate).toISOString().split('T')[0] : '',
-    reorderLevel: initialData?.reorderLevel || 10,
+    name: medicine?.name || '',
+    description: medicine?.description || '',
+    manufacturer: medicine?.manufacturer || '',
+    mrp: medicine?.mrp || 0,
+    sellingPrice: medicine?.sellingPrice || 0,
+    stock: medicine?.stock || 0,
+    expiryDate: medicine?.expiryDate ? new Date(medicine.expiryDate).toISOString().split('T')[0] : '',
+    reorderLevel: medicine?.reorderLevel || 10,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -29,19 +29,24 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="modal-overlay">
       <div className="modal-content max-w-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">
-            {initialData ? 'Edit Medicine' : 'Add New Medicine'}
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">
+            {medicine ? 'Edit Medicine' : 'Add New Medicine'}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white">
+          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
             <X size={20} />
           </button>
         </div>
@@ -49,7 +54,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-300 mb-1">Medicine Name *</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Medicine Name *</label>
               <input 
                 name="name" 
                 value={formData.name} 
@@ -60,7 +65,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
             </div>
             
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Description</label>
               <textarea 
                 name="description" 
                 value={formData.description} 
@@ -70,7 +75,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Manufacturer</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Manufacturer</label>
               <input 
                 name="manufacturer" 
                 value={formData.manufacturer} 
@@ -80,7 +85,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Expiry Date *</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Expiry Date *</label>
               <input 
                 type="date" 
                 name="expiryDate" 
@@ -92,7 +97,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">MRP (₹) *</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">MRP (₹) *</label>
               <input 
                 type="number" 
                 name="mrp" 
@@ -106,7 +111,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Selling Price (₹) *</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Selling Price (₹) *</label>
               <input 
                 type="number" 
                 name="sellingPrice" 
@@ -120,7 +125,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Current Stock *</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Current Stock *</label>
               <input 
                 type="number" 
                 name="stock" 
@@ -133,7 +138,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">Reorder Level</label>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Reorder Level</label>
               <input 
                 type="number" 
                 name="reorderLevel" 
@@ -148,7 +153,7 @@ export function MedicineForm({ initialData, onSubmit, onClose, isSubmitting }: M
           <div className="flex justify-end gap-3 pt-4">
             <button type="button" onClick={onClose} className="btn btn-secondary">Cancel</button>
             <button type="submit" disabled={isSubmitting} className="btn btn-primary">
-              {isSubmitting ? 'Saving...' : initialData ? 'Update Medicine' : 'Add Medicine'}
+              {isSubmitting ? 'Saving...' : medicine ? 'Update Medicine' : 'Add Medicine'}
             </button>
           </div>
         </form>

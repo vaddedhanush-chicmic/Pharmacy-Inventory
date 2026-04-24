@@ -1,157 +1,165 @@
 import { useDashboard } from '../hooks/use-dashboard';
+import { useNavigate } from 'react-router-dom';
 import { 
   DollarSign, 
   ShoppingCart, 
-  TrendingUp, 
+  TrendingDown,
   AlertTriangle, 
   Package, 
-  Clock 
+  Clock,
+  Pill,
+  ReceiptText,
+  BarChart3,
+  ArrowRight
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export function DashboardPage() {
   const { summary, topSelling, isLoading } = useDashboard();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
-      <div className="page-container space-y-10">
-        <div className="grid-cards">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-36 skeleton" />)}
+      <div className="page-container space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-24 skeleton" />)}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
-          <div className="h-96 skeleton" />
-          <div className="h-96 skeleton" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="h-80 skeleton" />
+          <div className="h-80 skeleton" />
         </div>
       </div>
     );
   }
 
   const kpis = [
-    { 
-      label: "Today's Revenue", 
-      value: `₹${(summary?.today.revenue ?? 0).toLocaleString()}`, 
-      icon: DollarSign, 
-      color: "text-teal-500", 
-      bg: "bg-teal-500/10" 
-    },
-    { 
-      label: "Today's Expenses", 
-      value: `₹${(summary?.today.expenses ?? 0).toLocaleString()}`, 
-      icon: TrendingUp, 
-      color: "text-red-500", 
-      bg: "bg-red-500/10" 
-    },
-    { 
-      label: "Net Earned", 
-      value: `₹${(summary?.today.netEarned ?? 0).toLocaleString()}`, 
-      icon: DollarSign, 
-      color: "text-green-500", 
-      bg: "bg-green-500/10" 
-    },
-    { 
-      label: "Invoices Today", 
-      value: summary?.today.invoices ?? 0, 
-      icon: ShoppingCart, 
-      color: "text-blue-500", 
-      bg: "bg-blue-500/10" 
-    },
+    { label: "Today's Revenue", value: `₹${(summary?.today.revenue ?? 0).toLocaleString()}`, icon: DollarSign, variant: 'green' as const },
+    { label: "Today's Expenses", value: `₹${(summary?.today.expenses ?? 0).toLocaleString()}`, icon: TrendingDown, variant: 'red' as const },
+    { label: "Net Earned", value: `₹${(summary?.today.netEarned ?? 0).toLocaleString()}`, icon: DollarSign, variant: 'blue' as const },
+    { label: "Invoices Today", value: String(summary?.today.invoices ?? 0), icon: ShoppingCart, variant: 'teal' as const },
   ];
 
   const alerts = [
-    { label: "Low Stock", count: summary?.alerts.lowStockItems ?? 0, icon: Package, color: "text-amber-500", bgColor: "bg-amber-500/10" },
-    { label: "Expiring Soon", count: summary?.alerts.expiringSoonItems ?? 0, icon: Clock, color: "text-blue-500", bgColor: "bg-blue-500/10" },
-    { label: "Already Expired", count: summary?.alerts.expiredItems ?? 0, icon: AlertTriangle, color: "text-red-500", bgColor: "bg-red-500/10" },
+    { label: "Low Stock", count: summary?.alerts.lowStockItems ?? 0, icon: Package, variant: 'amber' as const, path: '/medicines' },
+    { label: "Expiring Soon", count: summary?.alerts.expiringSoonItems ?? 0, icon: Clock, variant: 'blue' as const, path: '/medicines' },
+    { label: "Expired", count: summary?.alerts.expiredItems ?? 0, icon: AlertTriangle, variant: 'red' as const, path: '/medicines' },
   ];
 
-  const COLORS = ['#14b8a6', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const quickActions = [
+    { label: 'New Sale', icon: ShoppingCart, path: '/pos', shortcut: 'F2', color: 'var(--accent)' },
+    { label: 'Medicines', icon: Pill, path: '/medicines', shortcut: 'F3', color: 'var(--color-blue)' },
+    { label: 'Expenses', icon: ReceiptText, path: '/expenses', shortcut: 'F4', color: 'var(--color-amber)' },
+    { label: 'Reports', icon: BarChart3, path: '/reports', shortcut: '', color: 'var(--color-green)' },
+  ];
+
+  const COLORS = ['#0d9488', '#2563eb', '#d97706', '#dc2626', '#7c3aed'];
+  const variantMap: Record<string, string> = { green: 'green', red: 'red', blue: 'blue', amber: 'amber', teal: '' };
 
   return (
-    <div className="page-container space-y-10 pb-16">
-      {/* Page Header */}
+    <div className="page-container space-y-6 pb-8">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Dashboard Overview</h1>
-          <p className="page-subtitle">Real-time metrics for your pharmacy today</p>
-        </div>
-        <div className="flex gap-4 flex-wrap">
-          {alerts.map((alert, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-[rgba(148,163,184,0.1)] glass-card-static">
-              <alert.icon size={16} className={alert.color} />
-              <span className="text-sm text-slate-300">{alert.label}:</span>
-              <span className={`text-sm font-bold ${alert.color}`}>{alert.count}</span>
-            </div>
-          ))}
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-subtitle">Today's overview at a glance</p>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid-cards">
+      {/* KPI Strip (Marg left-border cards) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, i) => (
-          <div key={i} className="glass-card p-8 flex flex-col gap-3">
-            <div className={`h-12 w-12 rounded-xl ${kpi.bg} flex items-center justify-center ${kpi.color}`}>
-              <kpi.icon size={22} />
+          <div key={i} className={`stat-card ${variantMap[kpi.variant] || ''}`}>
+            <div className="flex items-center gap-3 mb-2">
+              <kpi.icon size={18} className="text-[var(--text-muted)]" />
+              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">{kpi.label}</span>
             </div>
-            <p className="text-sm font-medium text-slate-400 mt-3">{kpi.label}</p>
-            <h3 className="text-3xl font-bold text-white tracking-tight">{kpi.value}</h3>
+            <p className="text-2xl font-bold text-[var(--text-primary)]">{kpi.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {quickActions.map((action, i) => (
+          <button
+            key={i}
+            onClick={() => navigate(action.path)}
+            className="card card-hover p-5 flex items-center gap-4 text-left group"
+          >
+            <div 
+              className="h-10 w-10 rounded-lg flex items-center justify-center text-white shrink-0"
+              style={{ backgroundColor: action.color }}
+            >
+              <action.icon size={20} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-[var(--text-primary)] text-sm">{action.label}</p>
+              {action.shortcut && (
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">Press {action.shortcut}</p>
+              )}
+            </div>
+            <ArrowRight size={16} className="text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        ))}
+      </div>
+
+      {/* Main Content Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Top Selling Chart */}
-        <div className="glass-card p-8">
-          <h3 className="text-lg font-semibold text-white mb-8">Top Selling Medicines</h3>
-          <div className="h-72 w-full">
+        <div className="lg:col-span-2 card p-6">
+          <h3 className="text-base font-bold text-[var(--text-primary)] mb-5">Top Selling Medicines</h3>
+          <div className="h-96">
             {topSelling && topSelling.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topSelling} layout="vertical" barCategoryGap="20%">
-                  <XAxis type="number" hide />
+                <BarChart data={topSelling} layout="vertical" barCategoryGap="25%">
+                  <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis 
                     dataKey="name" 
                     type="category" 
-                    tick={{ fill: '#94a3b8', fontSize: 13 }} 
-                    width={110}
+                    tick={{ fill: '#475569', fontSize: 12 }} 
+                    width={100}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <Tooltip 
-                    cursor={{ fill: 'rgba(148, 163, 184, 0.05)' }}
-                    contentStyle={{ background: '#0f172a', border: '1px solid rgba(148,163,184,0.2)', borderRadius: '12px', padding: '12px 16px' }}
-                    itemStyle={{ color: '#14b8a6' }}
+                    cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                    contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '13px' }}
                   />
-                  <Bar dataKey="totalQuantitySold" radius={[0, 6, 6, 0]}>
+                  <Bar dataKey="totalQuantitySold" radius={[0, 4, 4, 0]}>
                     {topSelling.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} fillOpacity={0.8} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-slate-500 italic text-lg">
-                No sales data available yet
+              <div className="h-full flex items-center justify-center text-[var(--text-muted)]">
+                No sales data available
               </div>
             )}
           </div>
         </div>
 
-        {/* Inventory Health */}
-        <div className="glass-card p-8 flex flex-col">
-          <h3 className="text-lg font-semibold text-white mb-8">Inventory Health</h3>
-          <div className="flex-1 space-y-5">
+        {/* Inventory Alerts */}
+        <div className="card p-6">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-5">Inventory Alerts</h3>
+          <div className="space-y-3">
             {alerts.map((alert, i) => (
-              <div key={i} className="flex items-center justify-between p-5 rounded-2xl bg-slate-900/40 border border-[rgba(148,163,184,0.05)]">
-                <div className="flex items-center gap-5">
-                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${alert.bgColor} ${alert.color}`}>
-                    <alert.icon size={22} />
-                  </div>
+              <button
+                key={i}
+                onClick={() => navigate(alert.path)}
+                className="w-full flex items-center justify-between p-4 rounded-lg border border-[var(--border-light)] hover:bg-[var(--bg-table-hover)] transition-colors text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <alert.icon size={18} className={`text-[var(--color-${alert.variant})]`} />
                   <div>
-                    <p className="text-base font-semibold text-white">{alert.label}</p>
-                    <p className="text-sm text-slate-400 mt-0.5">Requires attention</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{alert.label}</p>
+                    <p className="text-xs text-[var(--text-muted)]">Requires attention</p>
                   </div>
                 </div>
-                <div className={`text-2xl font-bold ${alert.color}`}>
+                <span className={`text-xl font-bold text-[var(--color-${alert.variant})]`}>
                   {alert.count}
-                </div>
-              </div>
+                </span>
+              </button>
             ))}
           </div>
         </div>
