@@ -63,18 +63,25 @@ body {
 /* ── Cards ── */
 .card {
   background: var(--bg-card);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease;
+}
+
+.card:hover {
+  border-color: var(--border-medium);
 }
 
 .card-hover {
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .card-hover:hover {
   box-shadow: var(--shadow-md);
   border-color: var(--border-medium);
+  transform: translateY(-1px);
 }
 
 /* Left-border accent cards (Marg KPI pattern) */
@@ -123,6 +130,31 @@ body {
   color: #ffffff;
 }
 
+/* ── Form Layout ── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-error {
+  font-size: 12px;
+  color: var(--color-red);
+  margin-top: 4px;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 /* ── Inputs ── */
 .input {
   width: 100%;
@@ -133,12 +165,19 @@ body {
   color: var(--text-primary);
   font-size: 15px;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.15s ease;
+  min-height: 40px;
 }
 
 .input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.input:disabled {
+  background: var(--bg-table-stripe);
+  color: var(--text-muted);
+  cursor: not-allowed;
 }
 
 .input::placeholder {
@@ -148,10 +187,18 @@ body {
 .input-sm {
   padding: 8px 12px;
   font-size: 14px;
+  min-height: 36px;
+}
+
+.input-lg {
+  padding: 12px 16px;
+  font-size: 16px;
+  min-height: 44px;
 }
 
 /* ── Select ── */
 .select {
+  width: 100%;
   padding: 10px 14px;
   background: var(--bg-input);
   border: 1px solid var(--border-input);
@@ -160,11 +207,29 @@ body {
   font-size: 15px;
   outline: none;
   cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 40px;
+}
+
+.select:hover {
+  border-color: var(--border-medium);
 }
 
 .select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.select:disabled {
+  background: var(--bg-table-stripe);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.select-sm {
+  padding: 8px 12px;
+  font-size: 14px;
+  min-height: 36px;
 }
 
 /* ── Buttons ── */
@@ -181,6 +246,12 @@ body {
   border: 1px solid transparent;
   transition: all 0.15s ease;
   white-space: nowrap;
+  min-height: 40px;
+  user-select: none;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .btn:disabled {
@@ -192,11 +263,16 @@ body {
   background: var(--accent);
   color: #ffffff;
   border-color: var(--accent);
+  box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-hover);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 8px rgba(13, 148, 136, 0.3);
+}
+
+.btn-primary:active:not(:disabled) {
+  box-shadow: 0 1px 2px rgba(13, 148, 136, 0.2);
 }
 
 .btn-secondary {
@@ -217,7 +293,8 @@ body {
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: rgba(220, 38, 38, 0.12);
+  background: rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.4);
 }
 
 .btn-ghost {
@@ -227,16 +304,19 @@ body {
 
 .btn-ghost:hover:not(:disabled) {
   background: var(--bg-table-stripe);
+  color: var(--text-primary);
 }
 
 .btn-sm {
   padding: 6px 12px;
   font-size: 13px;
+  min-height: 36px;
 }
 
 .btn-lg {
   padding: 14px 28px;
   font-size: 16px;
+  min-height: 44px;
 }
 
 /* Shortcut key hint on buttons (Marg pattern) */
@@ -479,6 +559,136 @@ tr.row-danger td { background: #fef2f2; }
 tr.row-warning:hover td { background: #fef9c3; }
 tr.row-danger:hover td { background: #fee2e2; }
 
+/* ── Enhanced Spacing ── */
+.card {
+  padding: 20px;
+}
+
+.card > :first-child:not(.no-margin-top) {
+  margin-top: 0;
+}
+
+.card > :last-child:not(.no-margin-bottom) {
+  margin-bottom: 0;
+}
+
+/* ── Improved Link Styling ── */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Icon Colors ── */
+.icon-success { color: var(--color-green); }
+.icon-warning { color: var(--color-amber); }
+.icon-error { color: var(--color-red); }
+.icon-info { color: var(--color-blue); }
+.icon-muted { color: var(--text-muted); }
+
+/* ── Enhanced Table Readability ── */
+table tbody tr {
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.15s ease;
+}
+
+table tbody tr:last-child {
+  border-bottom: none;
+}
+
+/* ── Improved Focus States ── */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ── Better Text Selection ── */
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+/* ── Spacing Utilities ── */
+.gap-3-mobile {
+  gap: 12px;
+}
+
+.gap-4-mobile {
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .gap-3-tablet {
+    gap: 12px;
+  }
+
+  .gap-4-tablet {
+    gap: 16px;
+  }
+}
+
+/* ── Card Elevation on Hover ── */
+.card-hover {
+  transition: all 0.2s ease;
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* ── Better Input Placeholder Colors ── */
+.input::placeholder,
+.select > option {
+  color: var(--text-muted);
+}
+
+/* ── Disabled State Styling ── */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Print Styling Improvements ── */
+@media print {
+  .sidebar,
+  .status-bar,
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  .page-container {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  body {
+    background: white;
+  }
+
+  .card {
+    page-break-inside: avoid;
+    box-shadow: none;
+  }
+
+  .modal-overlay,
+  .modal-content {
+    display: block;
+  }
+}
+
 /* ── Toolbar (Marg-style action bar) ── */
 .toolbar {
   display: flex;
@@ -515,8 +725,18 @@ tr.row-danger:hover td { background: #fee2e2; }
     padding: 16px;
   }
 
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
   .page-title {
     font-size: 18px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
   }
 
   .grid-cards {
@@ -524,13 +744,41 @@ tr.row-danger:hover td { background: #fee2e2; }
     gap: 12px;
   }
 
+  .stat-card {
+    padding: 16px 20px;
+  }
+
   .hide-mobile {
     display: none;
   }
 
+  .show-mobile {
+    display: block !important;
+  }
+
   th, td {
-    padding: 8px 10px;
-    font-size: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  th {
+    padding: 12px 12px;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-height: 85vh;
+    padding: 20px;
+  }
+
+  .input,
+  .select,
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn-sm {
+    min-height: 40px;
   }
 }
 

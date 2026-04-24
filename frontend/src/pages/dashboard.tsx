@@ -1,16 +1,18 @@
 import { useDashboard } from '../hooks/use-dashboard';
 import { useNavigate } from 'react-router-dom';
-import { 
-  DollarSign, 
-  ShoppingCart, 
+import { KPICard } from '../components/ui/kpi-card';
+import { Skeleton } from '../components/ui/loading-skeleton';
+import {
+  DollarSign,
+  ShoppingCart,
   TrendingDown,
-  AlertTriangle, 
-  Package, 
+  AlertTriangle,
+  Package,
   Clock,
   Pill,
   ReceiptText,
   BarChart3,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -22,27 +24,74 @@ export function DashboardPage() {
     return (
       <div className="page-container space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-24 skeleton" />)}
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className="h-24" />
+          ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="h-80 skeleton" />
-          <div className="h-80 skeleton" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className="h-24" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2">
+            <Skeleton className="h-80" />
+          </div>
+          <Skeleton className="h-80" />
         </div>
       </div>
     );
   }
 
   const kpis = [
-    { label: "Today's Revenue", value: `₹${(summary?.today.revenue ?? 0).toLocaleString()}`, icon: DollarSign, variant: 'green' as const },
-    { label: "Today's Expenses", value: `₹${(summary?.today.expenses ?? 0).toLocaleString()}`, icon: TrendingDown, variant: 'red' as const },
-    { label: "Net Earned", value: `₹${(summary?.today.netEarned ?? 0).toLocaleString()}`, icon: DollarSign, variant: 'blue' as const },
-    { label: "Invoices Today", value: String(summary?.today.invoices ?? 0), icon: ShoppingCart, variant: 'teal' as const },
+    {
+      label: "Today's Revenue",
+      value: `₹${(summary?.today.revenue ?? 0).toLocaleString()}`,
+      icon: DollarSign,
+      variant: 'green' as const,
+    },
+    {
+      label: "Today's Expenses",
+      value: `₹${(summary?.today.expenses ?? 0).toLocaleString()}`,
+      icon: TrendingDown,
+      variant: 'red' as const,
+    },
+    {
+      label: 'Net Earned',
+      value: `₹${(summary?.today.netEarned ?? 0).toLocaleString()}`,
+      icon: DollarSign,
+      variant: 'blue' as const,
+    },
+    {
+      label: 'Invoices Today',
+      value: String(summary?.today.invoices ?? 0),
+      icon: ShoppingCart,
+      variant: 'default' as const,
+    },
   ];
 
   const alerts = [
-    { label: "Low Stock", count: summary?.alerts.lowStockItems ?? 0, icon: Package, variant: 'amber' as const, path: '/medicines' },
-    { label: "Expiring Soon", count: summary?.alerts.expiringSoonItems ?? 0, icon: Clock, variant: 'blue' as const, path: '/medicines' },
-    { label: "Expired", count: summary?.alerts.expiredItems ?? 0, icon: AlertTriangle, variant: 'red' as const, path: '/medicines' },
+    {
+      label: 'Low Stock',
+      count: summary?.alerts.lowStockItems ?? 0,
+      icon: Package,
+      variant: 'amber' as const,
+      path: '/medicines',
+    },
+    {
+      label: 'Expiring Soon',
+      count: summary?.alerts.expiringSoonItems ?? 0,
+      icon: Clock,
+      variant: 'blue' as const,
+      path: '/medicines',
+    },
+    {
+      label: 'Expired',
+      count: summary?.alerts.expiredItems ?? 0,
+      icon: AlertTriangle,
+      variant: 'red' as const,
+      path: '/medicines',
+    },
   ];
 
   const quickActions = [
@@ -53,7 +102,6 @@ export function DashboardPage() {
   ];
 
   const COLORS = ['#0d9488', '#2563eb', '#d97706', '#dc2626', '#7c3aed'];
-  const variantMap: Record<string, string> = { green: 'green', red: 'red', blue: 'blue', amber: 'amber', teal: '' };
 
   return (
     <div className="page-container space-y-6 pb-8">
@@ -64,16 +112,16 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* KPI Strip (Marg left-border cards) */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, i) => (
-          <div key={i} className={`stat-card ${variantMap[kpi.variant] || ''}`}>
-            <div className="flex items-center gap-3 mb-2">
-              <kpi.icon size={18} className="text-[var(--text-muted)]" />
-              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide">{kpi.label}</span>
-            </div>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">{kpi.value}</p>
-          </div>
+          <KPICard
+            key={i}
+            icon={kpi.icon}
+            label={kpi.label}
+            value={kpi.value}
+            variant={kpi.variant}
+          />
         ))}
       </div>
 
@@ -83,9 +131,9 @@ export function DashboardPage() {
           <button
             key={i}
             onClick={() => navigate(action.path)}
-            className="card card-hover p-5 flex items-center gap-4 text-left group"
+            className="card card-hover p-5 flex items-center gap-4 text-left group transition-all hover:shadow-md"
           >
-            <div 
+            <div
               className="h-10 w-10 rounded-lg flex items-center justify-center text-white shrink-0"
               style={{ backgroundColor: action.color }}
             >
@@ -97,7 +145,7 @@ export function DashboardPage() {
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">Press {action.shortcut}</p>
               )}
             </div>
-            <ArrowRight size={16} className="text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
+            <ArrowRight size={16} className="text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
           </button>
         ))}
       </div>
@@ -107,22 +155,27 @@ export function DashboardPage() {
         {/* Top Selling Chart */}
         <div className="lg:col-span-2 card p-6">
           <h3 className="text-base font-bold text-[var(--text-primary)] mb-5">Top Selling Medicines</h3>
-          <div className="h-96">
+          <div className="h-96 w-full">
             {topSelling && topSelling.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topSelling} layout="vertical" barCategoryGap="25%">
                   <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    tick={{ fill: '#475569', fontSize: 12 }} 
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fill: '#475569', fontSize: 12 }}
                     width={100}
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip 
+                  <Tooltip
                     cursor={{ fill: 'rgba(0,0,0,0.04)' }}
-                    contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '13px' }}
+                    contentStyle={{
+                      background: '#fff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                    }}
                   />
                   <Bar dataKey="totalQuantitySold" radius={[0, 4, 4, 0]}>
                     {topSelling.map((_, index) => (
@@ -149,14 +202,14 @@ export function DashboardPage() {
                 onClick={() => navigate(alert.path)}
                 className="w-full flex items-center justify-between p-4 rounded-lg border border-[var(--border-light)] hover:bg-[var(--bg-table-hover)] transition-colors text-left"
               >
-                <div className="flex items-center gap-3">
-                  <alert.icon size={18} className={`text-[var(--color-${alert.variant})]`} />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">{alert.label}</p>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <alert.icon size={18} className={`text-[var(--color-${alert.variant})] flex-shrink-0`} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{alert.label}</p>
                     <p className="text-xs text-[var(--text-muted)]">Requires attention</p>
                   </div>
                 </div>
-                <span className={`text-xl font-bold text-[var(--color-${alert.variant})]`}>
+                <span className={`text-xl font-bold text-[var(--color-${alert.variant})] ml-2 flex-shrink-0`}>
                   {alert.count}
                 </span>
               </button>

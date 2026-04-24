@@ -1,0 +1,10 @@
+src/components/ui/data-table.tsx(1,10): error TS1484: 'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/ui/empty-state.tsx(1,10): error TS1484: 'LucideIcon' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/ui/filter-bar.tsx(1,10): error TS1484: 'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/ui/kpi-card.tsx(1,10): error TS1484: 'LucideIcon' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/ui/modal-form.tsx(2,10): error TS1484: 'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/medicines.tsx(103,63): error TS2322: Type 'Dispatch<SetStateAction<MedicineTab>>' is not assignable to type '(tabId: string) => void'.
+  Types of parameters 'value' and 'tabId' are incompatible.
+    Type 'string' is not assignable to type 'SetStateAction<MedicineTab>'.
+src/pages/medicines.tsx(241,26): error TS2322: Type '"" | Promise<void> | null' is not assignable to type 'void | Promise<void>'.
+  Type 'null' is not assignable to type 'void | Promise<void>'.
