@@ -39,6 +39,12 @@ export class MedicinesService {
     }).exec();
   }
 
+  async getExpired(): Promise<MedicineDocument[]> {
+    return this.medicineModel.find({
+      expiryDate: { $lt: new Date() }
+    }).exec();
+  }
+
   async findOne(id: string): Promise<MedicineDocument> {
     const medicine = await this.medicineModel.findById(id).exec();
     if (!medicine) {

@@ -43,6 +43,13 @@ export class MedicinesController {
     return this.medicinesService.getExpiringSoon();
   }
 
+  @Get('expired')
+  @ApiOperation({ summary: 'Get all medicines that have already expired' })
+  @ApiResponse({ status: 200, description: 'Return expired medicines' })
+  getExpired() {
+    return this.medicinesService.getExpired();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific medicine by id' })
   @ApiResponse({ status: 200, description: 'Return the medicine' })
