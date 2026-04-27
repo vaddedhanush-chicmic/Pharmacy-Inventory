@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/select";
 import { fetcher, createSale } from "@/lib/api";
 import type { Medicine, CartItem, Sale } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 function SearchDropdown({
   medicines,
@@ -73,7 +73,7 @@ function SearchDropdown({
               <p className="text-sm text-muted-foreground">{medicine.manufacturer || "Generic"}</p>
             </div>
             <div className="text-right">
-              <p className="font-semibold text-primary">${medicine.sellingPrice.toFixed(2)}</p>
+              <p className="font-semibold text-primary">{formatCurrency(medicine.sellingPrice)}</p>
               <Badge
                 variant="outline"
                 className={cn(
@@ -108,7 +108,7 @@ function CartItemRow({
     <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-xl">
       <div className="flex-1 min-w-0">
         <p className="font-medium text-foreground truncate">{item.name}</p>
-        <p className="text-sm text-muted-foreground">${item.unitPrice.toFixed(2)} each</p>
+        <p className="text-sm text-muted-foreground">{formatCurrency(item.unitPrice)} each</p>
       </div>
       <div className="flex items-center gap-2">
         <Button
@@ -133,7 +133,7 @@ function CartItemRow({
       </div>
       <div className="w-20 text-right">
         <p className="font-semibold text-foreground">
-          ${(item.unitPrice * item.quantity).toFixed(2)}
+          {formatCurrency(item.unitPrice * item.quantity)}
         </p>
       </div>
       <Button
@@ -197,7 +197,7 @@ function ReceiptModal({
                 <span className="text-foreground">
                   {item.name} x{item.quantity}
                 </span>
-                <span className="font-medium">${item.subTotal.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrency(item.subTotal)}</span>
               </div>
             ))}
           </div>
@@ -207,7 +207,7 @@ function ReceiptModal({
           {/* Total */}
           <div className="flex justify-between text-lg font-bold">
             <span>Total</span>
-            <span className="text-primary">${sale.grandTotal.toFixed(2)}</span>
+            <span className="text-primary">{formatCurrency(sale.grandTotal)}</span>
           </div>
 
           <div className="text-sm text-center text-muted-foreground">
@@ -516,7 +516,7 @@ export default function POSPage() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm text-muted-foreground">Discount</span>
@@ -532,7 +532,7 @@ export default function POSPage() {
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">${total.toFixed(2)}</span>
+                  <span className="text-primary">{formatCurrency(total)}</span>
                 </div>
               </div>
 

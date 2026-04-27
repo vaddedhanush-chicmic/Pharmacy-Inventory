@@ -13,6 +13,8 @@ import {
   Menu,
   X,
   ChevronLeft,
+  Wallet,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,8 @@ const navItems: NavItem[] = [
   { href: "/medicines", label: "Medicines", icon: Pill },
   { href: "/pos", label: "Point of Sale", icon: ShoppingCart },
   { href: "/sales", label: "Sales History", icon: ClipboardList },
+  { href: "/expenses", label: "Expenses", icon: Wallet, adminOnly: true },
+  { href: "/reports", label: "Reports", icon: BarChart3, adminOnly: true },
   { href: "/staff", label: "Staff", icon: Users, adminOnly: true },
 ];
 

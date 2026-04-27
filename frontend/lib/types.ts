@@ -62,3 +62,41 @@ export interface AuthResponse {
   access_token: string;
   user: User;
 }
+
+export type ExpenseCategory = 'Inventory Purchase' | 'Salary' | 'Electricity' | 'Maintenance' | 'Other';
+
+export interface Expense {
+  _id: string;
+  amount: number;
+  category: ExpenseCategory;
+  description?: string;
+  date: string;
+  createdBy: string | User;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimeSeriesItem {
+  date: string;
+  revenue: number;
+  expenses: number;
+  net: number;
+  invoices: number;
+}
+
+export interface ReportSummary {
+  period: string;
+  grandTotals: {
+    totalRevenue: number;
+    totalExpenses: number;
+    netEarned: number;
+    totalInvoices: number;
+  };
+  timeSeries: TimeSeriesItem[];
+}
+
+export interface TopSellingItem {
+  _id: string;
+  name: string;
+  totalQuantitySold: number;
+}

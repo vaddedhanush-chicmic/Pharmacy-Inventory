@@ -1,12 +1,13 @@
 "use client";
 
 import useSWR from "swr";
-import { DollarSign, AlertTriangle, Clock, Package, Calendar } from "lucide-react";
+import { IndianRupee, AlertTriangle, Clock, Package, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetcher } from "@/lib/api";
+import { formatCurrency } from "@/lib/utils";
 import type { DashboardData, Medicine } from "@/lib/types";
 import { format, differenceInDays, parseISO } from "date-fns";
 
@@ -214,8 +215,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard
           title="Today&apos;s Revenue"
-          value={`$${dashboardData.todayRevenue.toLocaleString()}`}
-          icon={DollarSign}
+          value={formatCurrency(dashboardData.todayRevenue)}
+          icon={IndianRupee}
           variant="default"
         />
         <StatCard

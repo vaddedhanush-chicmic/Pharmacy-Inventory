@@ -24,7 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { fetcher } from "@/lib/api";
 import type { Sale } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 function SaleCard({ sale }: { sale: Sale }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -74,7 +74,7 @@ function SaleCard({ sale }: { sale: Sale }) {
               </Badge>
               <div className="text-right">
                 <p className="font-bold text-lg text-primary">
-                  ${sale.grandTotal.toFixed(2)}
+                  {formatCurrency(sale.grandTotal)}
                 </p>
               </div>
               <div
@@ -112,10 +112,10 @@ function SaleCard({ sale }: { sale: Sale }) {
                   <div>
                     <p className="font-medium text-foreground">{item.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      ${item.unitPrice.toFixed(2)} × {item.quantity}
+                      {formatCurrency(item.unitPrice)} x {item.quantity}
                     </p>
                   </div>
-                  <p className="font-semibold">${item.subTotal.toFixed(2)}</p>
+                  <p className="font-semibold">{formatCurrency(item.subTotal)}</p>
                 </div>
               ))}
             </div>
@@ -125,7 +125,7 @@ function SaleCard({ sale }: { sale: Sale }) {
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Total</span>
               <span className="text-xl font-bold text-primary">
-                ${sale.grandTotal.toFixed(2)}
+                {formatCurrency(sale.grandTotal)}
               </span>
             </div>
           </CardContent>
@@ -197,7 +197,7 @@ export default function SalesHistoryPage() {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Total Revenue</p>
             <p className="text-2xl font-bold text-primary">
-              ${totalRevenue.toFixed(2)}
+              {formatCurrency(totalRevenue)}
             </p>
           </CardContent>
         </Card>

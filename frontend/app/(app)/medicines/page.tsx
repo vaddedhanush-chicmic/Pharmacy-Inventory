@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetcher, createMedicine, updateMedicine, deleteMedicine } from "@/lib/api";
+import { formatCurrency } from "@/lib/utils";
 import type { Medicine } from "@/lib/types";
 
 const medicineSchema = z.object({
@@ -122,11 +123,11 @@ function MedicineCard({
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <div>
                 <span className="text-muted-foreground">MRP:</span>{" "}
-                <span className="font-medium">${medicine.mrp.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrency(medicine.mrp)}</span>
               </div>
               <div>
                 <span className="text-muted-foreground">Selling:</span>{" "}
-                <span className="font-medium text-primary">${medicine.sellingPrice.toFixed(2)}</span>
+                <span className="font-medium text-primary">{formatCurrency(medicine.sellingPrice)}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />

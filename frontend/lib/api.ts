@@ -148,6 +148,33 @@ export const deleteUser = async (id: string) => {
   return data;
 };
 
+// Expenses
+export const getExpenses = async (filters?: { period?: string; startDate?: string; endDate?: string }) => {
+  const { data } = await api.get("/expenses", { params: filters });
+  return data;
+};
+
+export const createExpense = async (expense: {
+  amount: number;
+  category: string;
+  description?: string;
+  date?: string;
+}) => {
+  const { data } = await api.post("/expenses", expense);
+  return data;
+};
+
+// Reports
+export const getReportsSummary = async (filters?: { period?: string; startDate?: string; endDate?: string }) => {
+  const { data } = await api.get("/reports/sales-summary", { params: filters });
+  return data;
+};
+
+export const getTopSelling = async () => {
+  const { data } = await api.get("/reports/top-selling");
+  return data;
+};
+
 // SWR fetcher
 export const fetcher = async (url: string) => {
   const { data } = await api.get(url);
