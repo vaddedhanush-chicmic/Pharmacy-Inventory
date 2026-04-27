@@ -1,0 +1,174 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Soft mint green base - calm, clinical-soft, trustworthy */
+  --background: #E8F5F0;
+  --foreground: #1a2e26;
+  
+  /* White cards */
+  --card: #ffffff;
+  --card-foreground: #1a2e26;
+  
+  --popover: #ffffff;
+  --popover-foreground: #1a2e26;
+  
+  /* Muted sage green as primary */
+  --primary: #7FBA9B;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #f0f7f4;
+  --secondary-foreground: #1a2e26;
+  
+  --muted: #e0ede8;
+  --muted-foreground: #5a7068;
+  
+  --accent: #D6EAF8;
+  --accent-foreground: #1a4a6e;
+  
+  /* Warm coral for destructive/warnings */
+  --destructive: #FF8A70;
+  --destructive-foreground: #ffffff;
+  
+  /* Warning - amber tones */
+  --warning: #F59E0B;
+  --warning-foreground: #ffffff;
+  
+  /* Success - green */
+  --success: #10B981;
+  --success-foreground: #ffffff;
+  
+  /* Info - soft sky blue */
+  --info: #D6EAF8;
+  --info-foreground: #1a4a6e;
+  
+  --border: #c8e0d8;
+  --input: #c8e0d8;
+  --ring: #7FBA9B;
+  
+  --chart-1: #7FBA9B;
+  --chart-2: #FF8A70;
+  --chart-3: #D6EAF8;
+  --chart-4: #F59E0B;
+  --chart-5: #10B981;
+  
+  --radius: 0.75rem;
+  
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a2e26;
+  --sidebar-primary: #7FBA9B;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #E8F5F0;
+  --sidebar-accent-foreground: #1a2e26;
+  --sidebar-border: #c8e0d8;
+  --sidebar-ring: #7FBA9B;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6aa385;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
