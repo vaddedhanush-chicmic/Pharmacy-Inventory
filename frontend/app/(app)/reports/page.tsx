@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import useSWR from "swr";
-import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subDays } from "date-fns";
+import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
 import {
   TrendingUp,
   TrendingDown,
@@ -191,9 +191,8 @@ export default function ReportsPage() {
     
     switch (viewPeriod) {
       case "daily":
-        // Last 7 days
         return {
-          startDate: format(subDays(today, 6), "yyyy-MM-dd"),
+          startDate: format(today, "yyyy-MM-dd"),
           endDate: format(today, "yyyy-MM-dd"),
         };
       case "weekly":
@@ -218,7 +217,7 @@ export default function ReportsPage() {
         };
       default:
         return {
-          startDate: format(subDays(today, 6), "yyyy-MM-dd"),
+          startDate: format(today, "yyyy-MM-dd"),
           endDate: format(today, "yyyy-MM-dd"),
         };
     }
@@ -237,10 +236,10 @@ export default function ReportsPage() {
   const { data: topSelling } = useSWR<TopSellingItem[]>("/reports/top-selling", fetcher);
 
   const periodButtons: { value: ViewPeriod; label: string }[] = [
-    { value: "daily", label: "Daily" },
-    { value: "weekly", label: "Weekly" },
-    { value: "monthly", label: "Monthly" },
-    { value: "yearly", label: "Yearly" },
+    { value: "daily", label: "Today" },
+    { value: "weekly", label: "Current Week" },
+    { value: "monthly", label: "Current Month" },
+    { value: "yearly", label: "Current Year" },
     { value: "custom", label: "Custom" },
   ];
 
@@ -257,13 +256,13 @@ export default function ReportsPage() {
   const getPeriodLabel = () => {
     switch (viewPeriod) {
       case "daily":
-        return "Last 7 Days";
+        return "Today";
       case "weekly":
-        return "This Week";
+        return "Current Calendar Week";
       case "monthly":
-        return "This Month";
+        return "Current Month";
       case "yearly":
-        return "This Year";
+        return "Current Year";
       case "custom":
         if (dateRange.startDate && dateRange.endDate) {
           return `${format(parseISO(dateRange.startDate), "MMM d")} - ${format(parseISO(dateRange.endDate), "MMM d, yyyy")}`;

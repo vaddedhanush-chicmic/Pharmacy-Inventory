@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:3000/api";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,8 +23,16 @@ api.interceptors.request.use((config) => {
 
 // Handle 401 errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const payload = response.data;
+    response.data = payload?.data ?? payload;
+    return response;
+  },
   (error) => {
+    if (error.response?.data?.error && !error.response.data.message) {
+      error.response.data.message = error.response.data.error;
+    }
+
     if (error.response?.status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("token");
       localStorage.removeItem("user");

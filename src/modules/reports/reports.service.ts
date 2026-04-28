@@ -53,19 +53,28 @@ export class ReportsService {
 
     const salesMetrics = todaysSales[0] || { totalAmount: 0, totalInvoices: 0 };
     const expensesMetrics = todaysExpenses[0] || { totalAmount: 0 };
-
-    // 2. Low Stock Alerts (Stock <= Reorder Level)
-    const lowStockCount = await this.medicineModel.countDocuments({
-      $expr: { $lte: ['$stock', '$reorderLevel'] }
-    });
-
-    // 3. Expiring Soon Alerts (Expiry < 30 days from now)
     const nextMonth = new Date();
     nextMonth.setDate(nextMonth.getDate() + 30);
-    
-    const expiringSoonCount = await this.medicineModel.countDocuments({
-      expiryDate: { $lt: nextMonth, $gte: new Date() }
-    });
+
+    // 2. Low Stock Alerts (Stock <= Reorder Level)
+    const [lowStockMedicines, expiringMedicines] = await Promise.all([
+      this.medicineModel
+        .find({
+          $expr: { $lte: ['$stock', '$reorderLevel'] },
+        })
+        .sort({ stock: 1, name: 1 })
+        .exec(),
+      this.medicineModel
+        .find({
+          expiryDate: { $lt: nextMonth, $gte: new Date() },
+        })
+        .sort({ expiryDate: 1, name: 1 })
+        .exec(),
+    ]);
+
+    // 3. Expiring Soon Alerts (Expiry < 30 days from now)
+    const lowStockCount = lowStockMedicines.length;
+    const expiringSoonCount = expiringMedicines.length;
 
     // 4. Already Expired
     const expiredCount = await this.medicineModel.countDocuments({
@@ -73,17 +82,16 @@ export class ReportsService {
     });
 
     return {
-      today: {
-        revenue: salesMetrics.totalAmount,
-        expenses: expensesMetrics.totalAmount,
-        netEarned: salesMetrics.totalAmount - expensesMetrics.totalAmount,
-        invoices: salesMetrics.totalInvoices,
-      },
-      alerts: {
-        lowStockItems: lowStockCount,
-        expiringSoonItems: expiringSoonCount,
-        expiredItems: expiredCount,
-      }
+      todayRevenue: salesMetrics.totalAmount,
+      todayExpenses: expensesMetrics.totalAmount,
+      todayNetEarned: salesMetrics.totalAmount - expensesMetrics.totalAmount,
+      todayInvoices: salesMetrics.totalInvoices,
+      lowStockCount,
+      expiryWarningCount: expiringSoonCount + expiredCount,
+      lowStockMedicines,
+      expiringMedicines: [...expiringMedicines].sort(
+        (a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime(),
+      ),
     };
   }
   async getSalesSummary(query: { period?: string; startDate?: string; endDate?: string }) {

@@ -7,10 +7,37 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const localhostOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3001',
+    'http://localhost:3002',
+  ];
+  const configuredOrigins = (process.env.FRONTEND_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const allowedOrigins = new Set([...localhostOrigins, ...configuredOrigins]);
 
   // Enable CORS for frontend
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3001'],
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      const isNgrokOrigin =
+        /^https:\/\/[a-z0-9-]+\.ngrok(-free)?\.app$/i.test(origin) ||
+        /^https:\/\/[a-z0-9-]+\.ngrok(-free)?\.dev$/i.test(origin) ||
+        /^https:\/\/[a-z0-9-]+\.ngrok\.io$/i.test(origin);
+
+      if (allowedOrigins.has(origin) || isNgrokOrigin) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by CORS`), false);
+    },
     credentials: true,
   });
 

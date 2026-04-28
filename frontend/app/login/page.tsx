@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import axios from "axios";
 import { Pill, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,9 +54,16 @@ export default function LoginPage() {
         router.push("/pos");
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "Invalid credentials"
-        : "Invalid credentials";
+      let errorMessage = "Invalid credentials";
+
+      if (axios.isAxiosError(error)) {
+        if (!error.response) {
+          errorMessage = "Unable to reach the server. Check the API URL or ngrok tunnel.";
+        } else {
+          errorMessage = error.response.data?.message || "Invalid credentials";
+        }
+      }
+
       toast.error("Login failed", {
         description: errorMessage,
       });
