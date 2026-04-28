@@ -9,6 +9,7 @@ import { MedicinesModule } from './modules/medicines/medicines.module.js';
 import { SalesModule } from './modules/sales/sales.module.js';
 import { ReportsModule } from './modules/reports/reports.module.js';
 import { ExpensesModule } from './modules/expenses/expenses.module.js';
+import { AiModule } from './modules/ai/ai.module.js';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ExpensesModule } from './modules/expenses/expenses.module.js';
     SalesModule,
     ReportsModule,
     ExpensesModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
